@@ -15,7 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OmniDesk.Infrastructure\OmniDesk.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\OmniDesk.Domain\OmniDesk.Domain.csproj" />
+    <ProjectReference Include="..\..\src\OmniDesk.Infrastructure\OmniDesk.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

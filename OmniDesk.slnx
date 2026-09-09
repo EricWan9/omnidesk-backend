@@ -1,17 +1,17 @@
 <Solution>
   <Folder Name="/docs/">
-    <File Path="architecture.md" />
+    <File Path="docs/architecture.md" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="OmniDesk.Api/OmniDesk.Api.csproj" />
-    <Project Path="OmniDesk.Application/OmniDesk.Application.csproj" Id="17fe4088-ff96-4f52-b8ba-a9a34fb9fb00" />
-    <Project Path="OmniDesk.Domain/OmniDesk.Domain.csproj" Id="237f96a4-2ca9-4959-9d8d-7defc6b73202" />
-    <Project Path="OmniDesk.Infrastructure/OmniDesk.Infrastructure.csproj" Id="7ec29c63-60bc-4a99-985a-0bfc666ce66a" />
+    <Project Path="src/OmniDesk.Api/OmniDesk.Api.csproj" />
+    <Project Path="src/OmniDesk.Application/OmniDesk.Application.csproj" Id="17fe4088-ff96-4f52-b8ba-a9a34fb9fb00" />
+    <Project Path="src/OmniDesk.Domain/OmniDesk.Domain.csproj" Id="237f96a4-2ca9-4959-9d8d-7defc6b73202" />
+    <Project Path="src/OmniDesk.Infrastructure/OmniDesk.Infrastructure.csproj" Id="7ec29c63-60bc-4a99-985a-0bfc666ce66a" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="OmniDesk.Identity.Tests/OmniDesk.Identity.Tests.csproj" />
+    <Project Path="tests/OmniDesk.Identity.Tests/OmniDesk.Identity.Tests.csproj" />
   </Folder>
 </Solution>
