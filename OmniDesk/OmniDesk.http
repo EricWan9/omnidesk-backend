@@ -1,0 +1,6 @@
+@OmniDesk_HostAddress = http://localhost:5249
+
+GET {{OmniDesk_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,261 @@
+# ============================================================
+# OmniDesk .gitignore
+# .NET / ASP.NET Core / EF Core / Rider / Visual Studio
+# React / TypeScript / Vite
+# ============================================================
+
+
+# ============================================================
+# .NET build outputs
+# ============================================================
+
+**/bin/
+**/obj/
+
+artifacts/
+[Bb]uild/
+[Bb]uilds/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+
+
+# ============================================================
+# Visual Studio
+# ============================================================
+
+.vs/
+
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio database files
+*.mdf
+*.ldf
+
+
+# ============================================================
+# JetBrains Rider / IntelliJ
+# ============================================================
+
+.idea/
+*.sln.iml
+
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+
+# ============================================================
+# Test results / coverage
+# ============================================================
+
+TestResults/
+**/TestResults/
+
+*.trx
+*.coverage
+*.coveragexml
+
+coverage/
+coverage.*
+coverage-*/
+**/coverage/
+
+*.opencover.xml
+*.cobertura.xml
+
+
+# ============================================================
+# NuGet
+# ============================================================
+
+*.nupkg
+*.snupkg
+
+packages/
+
+# NuGet-generated files
+*.nuget.props
+*.nuget.targets
+
+
+# ============================================================
+# ASP.NET Core secrets / local configuration
+# ============================================================
+
+# Local-only settings
+appsettings.Local.json
+appsettings.*.Local.json
+appsettings.local.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Secrets / certificates
+*.pfx
+*.p12
+*.key
+*.pem
+
+secrets.json
+
+
+# ============================================================
+# SQL Server / local databases
+# ============================================================
+
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+*.bak
+
+
+# ============================================================
+# Logs
+# ============================================================
+
+logs/
+Logs/
+
+*.log
+
+
+# ============================================================
+# React / TypeScript / Vite / Node
+# ============================================================
+
+node_modules/
+
+dist/
+dist-ssr/
+
+.vite/
+.vite-cache/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.npm/
+.pnpm-store/
+
+# TypeScript incremental build information
+*.tsbuildinfo
+
+
+# ============================================================
+# Frontend environment files
+# ============================================================
+
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# ============================================================
+# Editor files
+# ============================================================
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+*.swp
+*.swo
+*~
+
+
+# ============================================================
+# Operating system files
+# ============================================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+.directory
+
+
+# ============================================================
+# Temporary files
+# ============================================================
+
+*.tmp
+*.temp
+*.cache
+
+tmp/
+temp/
+
+
+# ============================================================
+# Publish outputs
+# ============================================================
+
+publish/
+**/publish/
+
+
+# ============================================================
+# Docker local overrides
+# ============================================================
+
+docker-compose.override.yml
+
+
+# ============================================================
+# Azure / deployment local files
+# ============================================================
+
+.azure/
+
+
+# ============================================================
+# Misc
+# ============================================================
+
+*.orig
+*.rej
+
+
+# ============================================================
+# Coverage reports
+# ============================================================
+
+coveragereport/
+**/coveragereport/
+
+coverage/
+**/coverage/
+
+TestResults/
+**/TestResults/
+
+*.coverage
+*.coveragexml
+*.cobertura.xml
+*.opencover.xml
