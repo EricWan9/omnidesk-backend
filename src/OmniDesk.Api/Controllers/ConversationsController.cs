@@ -1,9 +1,8 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using OmniDesk.Application.Conversations;
 using OmniDesk.Api.Hubs;
+using OmniDesk.Api.Security;
+using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
 
 namespace OmniDesk.Api.Controllers;
@@ -28,7 +27,7 @@ public class ConversationsController : ControllerBase
         GetConversations(
             CancellationToken cancellationToken)
     {
-        var tenantId = GetTenantId();
+        var tenantId = User.GetRequiredTenantId();
 
         var conversations =
             await _conversationService.GetConversationsAsync(
@@ -44,7 +43,7 @@ public class ConversationsController : ControllerBase
             Guid conversationId,
             CancellationToken cancellationToken)
     {
-        var tenantId = GetTenantId();
+        var tenantId = User.GetRequiredTenantId();
 
         var conversation =
             await _conversationService.GetConversationAsync(
@@ -67,7 +66,7 @@ public class ConversationsController : ControllerBase
             [FromQuery] int pageSize = 50,
             CancellationToken cancellationToken = default)
     {
-        var tenantId = GetTenantId();
+        var tenantId = User.GetRequiredTenantId();
 
         var messages =
             await _conversationService.GetMessagesAsync(
@@ -86,8 +85,8 @@ public class ConversationsController : ControllerBase
             [FromBody] SendMessageRequest request,
             CancellationToken cancellationToken)
     {
-        var tenantId = GetTenantId();
-        var userId = GetUserId();
+        var tenantId = User.GetRequiredTenantId();
+        var userId = User.GetRequiredUserId();
 
         var message =
             await _conversationService.SendMessageAsync(
@@ -104,33 +103,5 @@ public class ConversationsController : ControllerBase
         return Created(
             $"/api/conversations/{conversationId}/messages/{message.Id}",
             message);
-    }
-
-    private Guid GetTenantId()
-    {
-        var value = User.FindFirstValue("tenantId");
-
-        if (!Guid.TryParse(value, out var tenantId))
-        {
-            throw new UnauthorizedAccessException(
-                "Tenant claim is missing or invalid.");
-        }
-
-        return tenantId;
-    }
-
-    private Guid GetUserId()
-    {
-        var value =
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("userId");
-
-        if (!Guid.TryParse(value, out var userId))
-        {
-            throw new UnauthorizedAccessException(
-                "User claim is missing or invalid.");
-        }
-
-        return userId;
     }
 }

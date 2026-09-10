@@ -1,23 +1,50 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using OmniDesk.Api.Security;
+using OmniDesk.Application.Conversations;
 
 namespace OmniDesk.Api.Hubs;
 
 [Authorize]
 public class ConversationHub : Hub
 {
-    public Task JoinConversation(Guid conversationId)
+    private readonly IConversationService _conversationService;
+
+    public ConversationHub(IConversationService conversationService)
     {
-        return Groups.AddToGroupAsync(
-            Context.ConnectionId,
-            GetConversationGroupName(conversationId));
+        _conversationService = conversationService;
     }
 
-    public Task LeaveConversation(Guid conversationId)
+    public async Task JoinConversation(Guid conversationId)
     {
-        return Groups.RemoveFromGroupAsync(
+        var user = Context.User 
+            ?? throw new HubException("User is not authenticated.");
+
+        var tenantId = user.GetRequiredTenantId();
+        var conversation =
+            await _conversationService.GetConversationAsync(
+                tenantId,
+                conversationId,
+                Context.ConnectionAborted);
+
+        if (conversation is null)
+        {
+            throw new HubException(
+                "Conversation not found or access denied.");
+        }
+
+        await Groups.AddToGroupAsync(
             Context.ConnectionId,
-            GetConversationGroupName(conversationId));
+            GetConversationGroupName(conversationId),
+            Context.ConnectionAborted);
+    }
+
+    public async Task LeaveConversation(Guid conversationId)
+    {
+        await Groups.RemoveFromGroupAsync(
+            Context.ConnectionId,
+            GetConversationGroupName(conversationId),
+            Context.ConnectionAborted);
     }
 
     public static string GetConversationGroupName(Guid conversationId)

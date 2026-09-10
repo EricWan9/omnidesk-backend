@@ -120,9 +120,7 @@ OmniDesk/
 │   ├── OmniDesk.Application/
 │   ├── OmniDesk.Domain/
 │   └── OmniDesk.Infrastructure/
-├── tests/
-└── frontend/
-    └── omnidesk-web/
+└── tests/
 ```
 
 ---
