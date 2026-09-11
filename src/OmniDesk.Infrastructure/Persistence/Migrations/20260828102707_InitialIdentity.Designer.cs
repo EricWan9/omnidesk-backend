@@ -10,7 +10,7 @@ using OmniDesk.Infrastructure.Persistence;
 
 namespace OmniDesk.Identity.Migrations
 {
-    [DbContext(typeof(IdentityDbContext))]
+    [DbContext(typeof(OmniDeskDbContext))]
     [Migration("20260828102707_InitialIdentity")]
     partial class InitialIdentity
     {

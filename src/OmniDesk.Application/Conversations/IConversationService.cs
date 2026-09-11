@@ -20,9 +20,6 @@ public interface IConversationService
         CancellationToken cancellationToken = default);
 
     Task<MessageResponse> SendMessageAsync(
-        Guid tenantId,
-        Guid userId,
-        Guid conversationId,
-        SendMessageRequest request,
-        CancellationToken cancellationToken = default);
+        SendMessageCommand command,
+        CancellationToken cancellationToken);
 }

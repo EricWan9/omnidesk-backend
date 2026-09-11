@@ -1,14 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OmniDesk.Domain.Conversations;
+using OmniDesk.Domain.Conversations.Entities;
 using OmniDesk.Domain.Entities;
 using OmniDesk.Domain.Identity;
 
 namespace OmniDesk.Infrastructure.Persistence;
 
-public class IdentityDbContext : DbContext
+public class OmniDeskDbContext : DbContext
 {
-    public IdentityDbContext(
-        DbContextOptions<IdentityDbContext> options)
+    public OmniDeskDbContext(
+        DbContextOptions<OmniDeskDbContext> options)
         : base(options)
     {
     }
@@ -157,7 +157,7 @@ public class IdentityDbContext : DbContext
 
             entity.HasOne<User>()
                 .WithMany()
-                .HasForeignKey(x => x.SenderUserId)
+                .HasForeignKey(x => x.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

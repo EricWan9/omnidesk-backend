@@ -21,8 +21,4 @@
     <ProjectReference Include="..\OmniDesk.Domain\OmniDesk.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Conversations\" />
-  </ItemGroup>
-
 </Project>

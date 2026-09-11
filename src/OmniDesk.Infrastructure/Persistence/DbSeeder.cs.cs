@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OmniDesk.Domain.Conversations;
+using OmniDesk.Domain.Conversations.Entities;
+using OmniDesk.Domain.Conversations.Enums;
 using OmniDesk.Domain.Entities;
 
 namespace OmniDesk.Infrastructure.Persistence;
@@ -12,7 +13,7 @@ public static class DbSeeder
         using var scope = services.CreateScope();
 
         var dbContext =
-            scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            scope.ServiceProvider.GetRequiredService<OmniDeskDbContext>();
 
         // If conversation test data already exists,
         // do not insert it again every time the application starts.
@@ -121,7 +122,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation1.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Hi, I was charged twice for my subscription.",
                 CreatedAt = now.AddMinutes(-45)
             },
@@ -131,7 +132,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation1.Id,
                 SenderType = MessageSenderType.Agent,
-                SenderUserId = agent1.Id,
+                SenderId = agent1.Id,
                 Content = "Thanks for letting us know. Let me check the billing history for you.",
                 CreatedAt = now.AddMinutes(-40)
             },
@@ -141,7 +142,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation1.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "The two charges both appeared this morning.",
                 CreatedAt = now.AddMinutes(-8)
             },
@@ -151,7 +152,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation1.Id,
                 SenderType = MessageSenderType.Agent,
-                SenderUserId = agent1.Id,
+                SenderId = agent1.Id,
                 Content = "I found the duplicate transaction. I'll submit a refund request for the second charge.",
                 CreatedAt = now.AddMinutes(-3)
             },
@@ -161,7 +162,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation2.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Hello, I can't log in to my account after resetting my password.",
                 CreatedAt = now.AddHours(-2)
             },
@@ -171,7 +172,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation2.Id,
                 SenderType = MessageSenderType.System,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Conversation is waiting for an available agent.",
                 CreatedAt = now.AddMinutes(-20)
             },
@@ -181,7 +182,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation3.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Can I change the email address linked to my account?",
                 CreatedAt = now.AddDays(-1)
             },
@@ -191,7 +192,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation3.Id,
                 SenderType = MessageSenderType.Agent,
-                SenderUserId = agent2?.Id ?? agent1.Id,
+                SenderId = agent2?.Id ?? agent1.Id,
                 Content = "Yes. I've updated the email address after verifying your account.",
                 CreatedAt = now.AddHours(-5)
             },
@@ -201,7 +202,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation3.Id,
                 SenderType = MessageSenderType.System,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Conversation was closed.",
                 CreatedAt = now.AddHours(-4)
             },
@@ -211,7 +212,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation4.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Is there any way to download all invoices for this year?",
                 CreatedAt = now.AddMinutes(-25)
             },
@@ -221,7 +222,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation4.Id,
                 SenderType = MessageSenderType.Agent,
-                SenderUserId = agent1.Id,
+                SenderId = agent1.Id,
                 Content = "Yes. You can export them from Billing > Invoice History.",
                 CreatedAt = now.AddMinutes(-1)
             },
@@ -231,7 +232,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation5.Id,
                 SenderType = MessageSenderType.Customer,
-                SenderUserId = null,
+                SenderId = null,
                 Content = "Our team is seeing a delay when new conversations appear in the dashboard.",
                 CreatedAt = now.AddHours(-5)
             },
@@ -241,7 +242,7 @@ public static class DbSeeder
                 Id = Guid.NewGuid(),
                 ConversationId = conversation5.Id,
                 SenderType = MessageSenderType.Agent,
-                SenderUserId = agent2?.Id,
+                SenderId = agent2?.Id,
                 Content = "Thanks. We're checking the delivery delay and will update you shortly.",
                 CreatedAt = now.AddHours(-1)
             }

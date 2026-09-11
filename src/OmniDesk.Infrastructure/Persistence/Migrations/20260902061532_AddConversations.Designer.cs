@@ -11,7 +11,7 @@ using OmniDesk.Infrastructure.Persistence;
 
 namespace OmniDesk.Identity.Migrations
 {
-    [DbContext(typeof(IdentityDbContext))]
+    [DbContext(typeof(OmniDeskDbContext))]
     [Migration("20260902061532_AddConversations")]
     partial class AddConversations
     {

@@ -10,7 +10,7 @@ using OmniDesk.Infrastructure.Persistence;
 
 namespace OmniDesk.Identity.Migrations
 {
-    [DbContext(typeof(IdentityDbContext))]
+    [DbContext(typeof(OmniDeskDbContext))]
     partial class IdentityDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

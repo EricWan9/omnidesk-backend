@@ -1,6 +1,6 @@
-﻿using OmniDesk.Domain.Entities;
+﻿using OmniDesk.Domain.Conversations.Enums;
 
-namespace OmniDesk.Domain.Conversations;
+namespace OmniDesk.Domain.Conversations.Entities;
 
 public class Message
 {
@@ -12,7 +12,7 @@ public class Message
 
     public MessageSenderType SenderType { get; set; }
 
-    public Guid? SenderUserId { get; set; }
+    public Guid? SenderId { get; set; }
 
     public string Content { get; set; } = null!;
 

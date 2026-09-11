@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using OmniDesk.Api.Hubs;
+using OmniDesk.Api.Realtime;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace OmniDesk.Api.Controllers;
+namespace OmniDesk.Api.Controllers.Workspace;
 
 [ApiController]
-[Route("api/conversations")]
+[Route("api/workspace/conversations")]
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationService _conversationService;
@@ -63,7 +64,7 @@ public class ConversationsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<MessageResponse>>>
         GetMessages(
             Guid conversationId,
-            [FromQuery] int pageSize = 50,
+            [FromQuery, Range(1, 100)] int pageSize = 50,
             CancellationToken cancellationToken = default)
     {
         var tenantId = User.GetRequiredTenantId();
@@ -88,17 +89,16 @@ public class ConversationsController : ControllerBase
         var tenantId = User.GetRequiredTenantId();
         var userId = User.GetRequiredUserId();
 
+        var command = new SendMessageCommand(
+            TenantId: tenantId,
+            ConversationId: conversationId,
+            MessageSender: MessageSender.Agent(userId),
+            Content: request.Content);
+
         var message =
             await _conversationService.SendMessageAsync(
-                tenantId,
-                userId,
-                conversationId,
-                request,
+                command,
                 cancellationToken);
-        // Broadcast to SignalR clients subscribed to the conversation
-        await _hubContext.Clients
-            .Group(ConversationHub.GetConversationGroupName(conversationId))
-            .SendAsync("MessageCreated", message, cancellationToken);
 
         return Created(
             $"/api/conversations/{conversationId}/messages/{message.Id}",

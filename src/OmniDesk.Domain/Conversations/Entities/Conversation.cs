@@ -1,6 +1,6 @@
-﻿using OmniDesk.Domain.Conversations;
+﻿using OmniDesk.Domain.Conversations.Enums;
 
-namespace OmniDesk.Domain.Entities;
+namespace OmniDesk.Domain.Conversations.Entities;
     
 public class Conversation
 {

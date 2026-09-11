@@ -8,12 +8,12 @@ namespace OmniDesk.Infrastructure.Identity;
 
 public sealed class AuthenticationService : IAuthenticationService
 {
-    private readonly IdentityDbContext _dbContext;
+    private readonly OmniDeskDbContext _dbContext;
     private readonly IPasswordService _passwordService;
     private readonly ITokenService _tokenService;
 
     public AuthenticationService(
-        IdentityDbContext dbContext,
+        OmniDeskDbContext dbContext,
         IPasswordService passwordService,
         ITokenService tokenService)
     {

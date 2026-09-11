@@ -1,4 +1,4 @@
-﻿namespace OmniDesk.Domain.Conversations;
+﻿namespace OmniDesk.Domain.Conversations.Enums;
 
 public enum ConversationStatus
 {

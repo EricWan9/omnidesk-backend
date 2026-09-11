@@ -1,4 +1,4 @@
-﻿using OmniDesk.Domain.Conversations;
+﻿using OmniDesk.Domain.Conversations.Enums;
 
 namespace OmniDesk.Application.Conversations.Models;
 

@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.SignalR;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Conversations;
 
-namespace OmniDesk.Api.Hubs;
+namespace OmniDesk.Api.Realtime;
 
 [Authorize]
-public class ConversationHub : Hub
+public class ConversationHub : Hub<IConversationClient>
 {
     private readonly IConversationService _conversationService;
 

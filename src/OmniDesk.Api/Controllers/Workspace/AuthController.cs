@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using OmniDesk.Application.Identity;
 using OmniDesk.Application.Identity.Models;
-using OmniDesk.Infrastructure.Identity;
 
-namespace OmniDesk.Api.Controllers;
+namespace OmniDesk.Api.Controllers.Workspace;
 
 [ApiController]
 [Route("api/auth")]
