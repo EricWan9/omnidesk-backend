@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OmniDesk.Api.OpenApi;
-using OmniDesk.Api.Realtime;
+using OmniDesk.Api.Realtime.Conversations;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Identity;
 using OmniDesk.Infrastructure.Authentication;
+using OmniDesk.Infrastructure.Conversations;
 using OmniDesk.Infrastructure.Identity;
 using OmniDesk.Infrastructure.Persistence;
 using System.Text;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IConversationNotifier, SignalRConversationNotifier>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 
 builder.Services.AddSignalR();
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using OmniDesk.Api.Realtime;
+using OmniDesk.Api.Realtime.Conversations;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;

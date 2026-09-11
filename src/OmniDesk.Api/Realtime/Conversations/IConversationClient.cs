@@ -1,6 +1,6 @@
 ﻿using OmniDesk.Application.Conversations.Models;
 
-namespace OmniDesk.Api.Realtime;
+namespace OmniDesk.Api.Realtime.Conversations;
 
 public interface IConversationClient
 {

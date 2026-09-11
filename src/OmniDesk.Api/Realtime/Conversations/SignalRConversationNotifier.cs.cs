@@ -2,7 +2,7 @@
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
 
-namespace OmniDesk.Api.Realtime;
+namespace OmniDesk.Api.Realtime.Conversations;
 
 public sealed class SignalRConversationNotifier : IConversationNotifier
 {
