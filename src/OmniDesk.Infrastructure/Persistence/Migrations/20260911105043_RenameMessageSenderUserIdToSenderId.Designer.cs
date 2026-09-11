@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OmniDesk.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using OmniDesk.Infrastructure.Persistence;
 namespace OmniDesk.Identity.Migrations
 {
     [DbContext(typeof(OmniDeskDbContext))]
-    partial class IdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260911105043_RenameMessageSenderUserIdToSenderId")]
+    partial class RenameMessageSenderUserIdToSenderId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

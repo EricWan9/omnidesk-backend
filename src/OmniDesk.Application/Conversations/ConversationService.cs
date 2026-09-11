@@ -20,7 +20,7 @@ public sealed class ConversationService : IConversationService
 
     public async Task<ConversationDetailResponse?> GetConversationAsync(Guid tenantId, Guid conversationId, CancellationToken cancellationToken)
     {
-        return await _conversationRepository.GetConversationByIdAsync(tenantId, conversationId, cancellationToken);
+        return await _conversationRepository.GetConversationDetailByIdAsync(tenantId, conversationId, cancellationToken);
     }
 
     public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(Guid tenantId, CancellationToken cancellationToken)
@@ -47,6 +47,13 @@ public sealed class ConversationService : IConversationService
     public async Task<MessageResponse> SendMessageAsync(
         SendMessageCommand command, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(command.Content))
+        {
+            throw new ArgumentException(
+                "Message content cannot be empty.",
+                nameof(command.Content));
+        }
+
         var conversation = await _conversationRepository.GetConversationByIdAsync(
             command.TenantId, command.ConversationId, cancellationToken);
 
@@ -60,19 +67,21 @@ public sealed class ConversationService : IConversationService
             throw new ConversationClosedException(command.ConversationId);
         }
 
+        var now = DateTime.UtcNow;
+
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            ConversationId = command.ConversationId,
+            ConversationId = conversation.Id,
             SenderType = command.MessageSender.Type,
             SenderId = command.MessageSender.Id,
             Content = command.Content,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = now
         };
 
-        await _conversationRepository.AddMessageAsync(
-            message,
-            cancellationToken);
+        _conversationRepository.AddMessage(message);
+
+        conversation.MarkUpdated(now);
 
         await _conversationRepository.SaveChangesAsync(
             cancellationToken);

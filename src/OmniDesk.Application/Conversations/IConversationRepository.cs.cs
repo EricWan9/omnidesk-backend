@@ -10,7 +10,12 @@ public interface IConversationRepository
         Guid tenantId,
         CancellationToken cancellationToken);
 
-    Task<ConversationDetailResponse?> GetConversationByIdAsync(
+    Task<ConversationDetailResponse?> GetConversationDetailByIdAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken);
+
+    Task<Conversation?> GetConversationByIdAsync(
         Guid tenantId,
         Guid conversationId,
         CancellationToken cancellationToken);
@@ -21,9 +26,7 @@ public interface IConversationRepository
         int pageSize,
         CancellationToken cancellationToken);
 
-    Task AddMessageAsync(
-        Message message,
-        CancellationToken cancellationToken);
+    void AddMessage(Message message);
 
     Task SaveChangesAsync(
         CancellationToken cancellationToken);

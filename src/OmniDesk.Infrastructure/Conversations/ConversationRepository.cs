@@ -15,12 +15,12 @@ public sealed class ConversationRepository : IConversationRepository
         _dbContext = dbContext;
     }
 
-    public Task AddMessageAsync(Message message, CancellationToken cancellationToken)
+    public void AddMessage(Message message)
     {
-        throw new NotImplementedException();
+        _dbContext.Messages.Add(message);
     }
 
-    public async Task<ConversationDetailResponse?> GetConversationByIdAsync(
+    public async Task<ConversationDetailResponse?> GetConversationDetailByIdAsync(
         Guid tenantId, 
         Guid conversationId, 
         CancellationToken 
@@ -40,6 +40,20 @@ public sealed class ConversationRepository : IConversationRepository
                 c.RowVersion
             ))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<Conversation?> GetConversationByIdAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken
+        cancellationToken)
+    {
+        return _dbContext.Conversations
+            .FirstOrDefaultAsync(
+            c =>
+                c.TenantId == tenantId &&
+                c.Id == conversationId,
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
@@ -93,8 +107,8 @@ public sealed class ConversationRepository : IConversationRepository
             .ToListAsync(cancellationToken);
     }
 
-    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

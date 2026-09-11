@@ -24,4 +24,9 @@ public class Conversation
 
     public ICollection<Message> Messages { get; set; }
         = new List<Message>();
+
+    public void MarkUpdated(DateTime updatedAt)
+    {
+        UpdatedAt = updatedAt;
+    }
 }
