@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 
-namespace OmniDesk.Identity.Tests.Authentication;
+namespace OmniDesk.Application.Tests.Authentication;
 
 public class TokenServiceTests
 {
