@@ -4,6 +4,7 @@ using OmniDesk.Domain.Conversations;
 using OmniDesk.Domain.Customers;
 using OmniDesk.Domain.Entities;
 using OmniDesk.Domain.Identity;
+using OmniDesk.Domain.Widgets;
 
 namespace OmniDesk.Infrastructure.Persistence;
 
@@ -26,6 +27,8 @@ public class OmniDeskDbContext : DbContext
     public DbSet<Message> Messages => Set<Message>();
 
     public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<WidgetConfiguration> WidgetConfigurations => Set<WidgetConfiguration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
