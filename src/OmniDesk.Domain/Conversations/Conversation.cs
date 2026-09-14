@@ -1,6 +1,6 @@
-﻿using OmniDesk.Domain.Conversations.Enums;
+﻿using OmniDesk.Domain.Customers;
 
-namespace OmniDesk.Domain.Conversations.Entities;
+namespace OmniDesk.Domain.Conversations;
     
 public class Conversation
 {
@@ -8,9 +8,9 @@ public class Conversation
 
     public Guid TenantId { get; set; }
 
-    public string CustomerName { get; set; } = null!;
+    public Guid CustomerId { get; set; }
 
-    public string CustomerEmail { get; set; } = null!;
+    public Customer Customer { get; set; } = null!;
 
     public ConversationStatus Status { get; set; }
 

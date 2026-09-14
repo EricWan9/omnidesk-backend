@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
-using OmniDesk.Domain.Conversations.Entities;
+using OmniDesk.Domain.Conversations;
 using OmniDesk.Infrastructure.Persistence;
 
 namespace OmniDesk.Infrastructure.Conversations;
@@ -31,8 +31,8 @@ public sealed class ConversationRepository : IConversationRepository
             .Where(c => c.TenantId == tenantId && c.Id == conversationId)
             .Select(c => new ConversationDetailResponse(
                 c.Id,
-                c.CustomerName,
-                c.CustomerEmail,
+                c.Customer.Name,
+                c.Customer.Email,
                 c.Status,
                 c.AssignedUserId,
                 c.CreatedAt,
@@ -65,8 +65,8 @@ public sealed class ConversationRepository : IConversationRepository
         .Where(c => c.TenantId == tenantId)
         .Select(c => new ConversationListItemResponse(
             c.Id,
-            c.CustomerName,
-            c.CustomerEmail,
+            c.Customer.Name,
+            c.Customer.Email,
             c.Status,
             c.AssignedUserId,
 

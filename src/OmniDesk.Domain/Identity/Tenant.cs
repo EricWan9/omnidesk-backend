@@ -1,4 +1,5 @@
-﻿using OmniDesk.Domain.Identity;
+﻿using OmniDesk.Domain.Customers;
+using OmniDesk.Domain.Identity;
 
 namespace OmniDesk.Domain.Entities;
 

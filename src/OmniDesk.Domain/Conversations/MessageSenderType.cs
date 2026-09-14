@@ -1,4 +1,4 @@
-﻿namespace OmniDesk.Domain.Conversations.Enums;
+﻿namespace OmniDesk.Domain.Conversations;
 
 public enum MessageSenderType
 {

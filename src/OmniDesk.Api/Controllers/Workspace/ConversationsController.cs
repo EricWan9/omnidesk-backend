@@ -13,14 +13,12 @@ namespace OmniDesk.Api.Controllers.Workspace;
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationService _conversationService;
-    private readonly IHubContext<ConversationHub> _hubContext;
 
     public ConversationsController(
         IConversationService conversationService,
         IHubContext<ConversationHub> hubContext)
     {
         _conversationService = conversationService;
-        _hubContext = hubContext;
     }
 
     [HttpGet]

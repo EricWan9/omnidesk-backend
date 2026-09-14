@@ -1,11 +1,11 @@
-﻿using OmniDesk.Domain.Conversations.Enums;
+﻿using OmniDesk.Domain.Conversations;
 
 namespace OmniDesk.Application.Conversations.Models;
 
 public sealed record ConversationDetailResponse(
     Guid Id,
-    string CustomerName,
-    string CustomerEmail,
+    string? CustomerName,
+    string? CustomerEmail,
     ConversationStatus Status,
     Guid? AssignedUserId,
     DateTime CreatedAt,

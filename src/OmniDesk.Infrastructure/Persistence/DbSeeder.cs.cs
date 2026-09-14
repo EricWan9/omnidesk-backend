@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OmniDesk.Domain.Conversations.Entities;
-using OmniDesk.Domain.Conversations.Enums;
+using OmniDesk.Domain.Conversations;
+using OmniDesk.Domain.Customers;
 using OmniDesk.Domain.Entities;
 
 namespace OmniDesk.Infrastructure.Persistence;
@@ -52,8 +52,12 @@ public static class DbSeeder
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
-            CustomerName = "Alice Chen",
-            CustomerEmail = "alice.chen@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+            },
             Status = ConversationStatus.Open,
             AssignedUserId = agent1.Id,
             CreatedAt = now.AddMinutes(-45),
@@ -64,8 +68,12 @@ public static class DbSeeder
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
-            CustomerName = "Michael Wong",
-            CustomerEmail = "michael.wong@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+            },
             Status = ConversationStatus.Pending,
             AssignedUserId = null,
             CreatedAt = now.AddHours(-2),
@@ -76,8 +84,12 @@ public static class DbSeeder
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
-            CustomerName = "Sophia Lee",
-            CustomerEmail = "sophia.lee@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+            },
             Status = ConversationStatus.Closed,
             AssignedUserId = agent2?.Id ?? agent1.Id,
             CreatedAt = now.AddDays(-1),
@@ -88,8 +100,12 @@ public static class DbSeeder
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
-            CustomerName = "Daniel Ho",
-            CustomerEmail = "daniel.ho@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+            },
             Status = ConversationStatus.Open,
             AssignedUserId = agent1.Id,
             CreatedAt = now.AddMinutes(-25),
@@ -100,8 +116,12 @@ public static class DbSeeder
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
-            CustomerName = "Emily Lam",
-            CustomerEmail = "emily.lam@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+            },
             Status = ConversationStatus.Pending,
             AssignedUserId = agent2?.Id,
             CreatedAt = now.AddHours(-5),

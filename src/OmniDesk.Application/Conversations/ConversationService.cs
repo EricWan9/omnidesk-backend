@@ -1,7 +1,6 @@
 ﻿using OmniDesk.Application.Conversations.Exceptions;
 using OmniDesk.Application.Conversations.Models;
-using OmniDesk.Domain.Conversations.Entities;
-using OmniDesk.Domain.Conversations.Enums;
+using OmniDesk.Domain.Conversations;
 
 namespace OmniDesk.Application.Conversations;
 

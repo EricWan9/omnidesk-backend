@@ -2,8 +2,9 @@
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Exceptions;
 using OmniDesk.Application.Conversations.Models;
-using OmniDesk.Domain.Conversations.Entities;
-using OmniDesk.Domain.Conversations.Enums;
+using OmniDesk.Domain.Conversations;
+using OmniDesk.Domain.Customers;
+using OmniDesk.Domain.Entities;
 
 namespace OmniDesk.Application.Tests.Conversations;
 
@@ -34,8 +35,12 @@ public sealed class ConversationServiceTests
         {
             Id = conversationId,
             TenantId = tenantId,
-            CustomerName = "Test Customer",
-            CustomerEmail = "customer@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+            },
             Status = openStatus,
             CreatedAt = originalUpdatedAt,
             UpdatedAt = originalUpdatedAt,
@@ -171,8 +176,12 @@ public sealed class ConversationServiceTests
         {
             Id = conversationId,
             TenantId = tenantId,
-            CustomerName = "Test Customer",
-            CustomerEmail = "customer@example.com",
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+            },
             Status = closeStatus,
             CreatedAt = originalUpdatedAt,
             UpdatedAt = originalUpdatedAt,

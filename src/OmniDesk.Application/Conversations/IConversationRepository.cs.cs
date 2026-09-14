@@ -1,5 +1,5 @@
 ﻿using OmniDesk.Application.Conversations.Models;
-using OmniDesk.Domain.Conversations.Entities;
+using OmniDesk.Domain.Conversations;
 using OmniDesk.Domain.Entities;
 
 namespace OmniDesk.Application.Conversations;
