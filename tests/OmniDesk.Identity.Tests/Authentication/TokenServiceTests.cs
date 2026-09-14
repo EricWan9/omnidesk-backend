@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using OmniDesk.Domain.Identity;
+using OmniDesk.Domain.Security;
 using OmniDesk.Infrastructure.Authentication;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,22 +11,78 @@ namespace OmniDesk.Application.Tests.Authentication;
 public class TokenServiceTests
 {
     [Fact]
-    public void GenerateAccessToken_ShouldContainUserAndTenantClaims()
+    public void GenerateAccessToken_ShouldContainAgentClaims()
     {
         var options = CreateJwtOptions();
-
         var service = new TokenService(options);
-
         var user = CreateUser();
 
         var token = service.GenerateAccessToken(user);
+
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
 
-        Assert.NotNull(jwtToken);
-        Assert.Equal(user.Id.ToString(), jwtToken.Claims.First(c => c.Type == "userId").Value);
-        Assert.Equal(user.TenantId.ToString(), jwtToken.Claims.First(c => c.Type == "tenantId").Value);
-        Assert.Equal(user.Email, jwtToken.Claims.First(c => c.Type == "email").Value);
+        Assert.Equal(
+            user.Id.ToString(),
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.UserId)
+                .Value);
+
+        Assert.Equal(
+            user.TenantId.ToString(),
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.TenantId)
+                .Value);
+
+        Assert.Equal(
+            OmniDeskActorTypes.Agent,
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.ActorType)
+                .Value);
+    }
+
+    [Fact]
+    public void GenerateCustomerAccessToken_ShouldContainCustomerClaims()
+    {
+        var options = CreateJwtOptions();
+        var service = new TokenService(options);
+
+        var tenantId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var token =
+            service.GenerateCustomerAccessToken(
+                tenantId,
+                customerId,
+                conversationId);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+
+        Assert.Equal(
+            tenantId.ToString(),
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.TenantId)
+                .Value);
+
+        Assert.Equal(
+            customerId.ToString(),
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.CustomerId)
+                .Value);
+
+        Assert.Equal(
+            conversationId.ToString(),
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.ConversationId)
+                .Value);
+
+        Assert.Equal(
+            OmniDeskActorTypes.Customer,
+            jwtToken.Claims
+                .First(c => c.Type == OmniDeskClaimTypes.ActorType)
+                .Value);
     }
 
     [Fact]
