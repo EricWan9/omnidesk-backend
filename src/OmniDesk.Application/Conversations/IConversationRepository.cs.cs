@@ -1,6 +1,5 @@
 ﻿using OmniDesk.Application.Conversations.Models;
 using OmniDesk.Domain.Conversations;
-using OmniDesk.Domain.Entities;
 
 namespace OmniDesk.Application.Conversations;
 
@@ -20,14 +19,5 @@ public interface IConversationRepository
         Guid conversationId,
         CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<MessageResponse>> GetMessagesAsync(
-        Guid tenantId,
-        Guid conversationId,
-        int pageSize,
-        CancellationToken cancellationToken);
-
-    void AddMessage(Message message);
-
-    Task SaveChangesAsync(
-        CancellationToken cancellationToken);
+    void AddConversation(Conversation conversation);
 }

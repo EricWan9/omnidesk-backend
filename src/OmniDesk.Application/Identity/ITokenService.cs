@@ -6,5 +6,10 @@ public interface ITokenService
 {
     string GenerateAccessToken(User user);
 
+    string GenerateCustomerAccessToken(
+        Guid tenantId,
+        Guid customerId,
+        Guid conversationId);
+
     string GenerateRefreshToken();
 }

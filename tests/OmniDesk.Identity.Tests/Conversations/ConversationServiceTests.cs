@@ -47,11 +47,10 @@ public sealed class ConversationServiceTests
             RowVersion = Array.Empty<byte>()
         };
 
-        var repositoryMock =
-            new Mock<IConversationRepository>();
-
-        var notifierMock =
-            new Mock<IConversationNotifier>();
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         Message? addedMessage = null;
         MessageResponse? notifiedResponse = null;
@@ -64,18 +63,18 @@ public sealed class ConversationServiceTests
                     cancellationToken))
             .ReturnsAsync(conversation);
 
-        repositoryMock
+        messageRepositoryMock
             .Setup(repository =>
                 repository.AddMessage(
                     It.IsAny<Message>()))
             .Callback<Message>(message =>
                 addedMessage = message);
 
-        repositoryMock
-            .Setup(repository =>
-                repository.SaveChangesAsync(
-                    cancellationToken))
-            .Returns(Task.CompletedTask);
+        unityOfWorkMock
+           .Setup(unitOfWork =>
+               unitOfWork.SaveChangesAsync(
+                   cancellationToken))
+           .Returns(Task.CompletedTask);
 
         notifierMock
             .Setup(notifier =>
@@ -91,7 +90,9 @@ public sealed class ConversationServiceTests
 
         var service = new ConversationService(
             repositoryMock.Object,
-            notifierMock.Object);
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
@@ -131,15 +132,15 @@ public sealed class ConversationServiceTests
                     cancellationToken),
             Times.Once);
 
-        repositoryMock.Verify(
+        messageRepositoryMock.Verify(
             repository =>
                 repository.AddMessage(
                     It.IsAny<Message>()),
             Times.Once);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.SaveChangesAsync(
+        unityOfWorkMock.Verify(
+            unitOfWork =>
+                unitOfWork.SaveChangesAsync(
                     cancellationToken),
             Times.Once);
 
@@ -191,11 +192,15 @@ public sealed class ConversationServiceTests
         var cancellationToken = new CancellationTokenSource().Token;
 
         var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         var service = new ConversationService(
             repositoryMock.Object,
-            notifierMock.Object);
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
@@ -223,15 +228,15 @@ public sealed class ConversationServiceTests
                     cancellationToken),
             Times.Once);
 
-        repositoryMock.Verify(
+        messageRepositoryMock.Verify(
             repository =>
                 repository.AddMessage(
                     It.IsAny<Message>()),
             Times.Never);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.SaveChangesAsync(
+        unityOfWorkMock.Verify(
+            unitOfWork =>
+                unitOfWork.SaveChangesAsync(
                     It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -258,10 +263,14 @@ public sealed class ConversationServiceTests
 
         var repositoryMock = new Mock<IConversationRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
 
         var service = new ConversationService(
             repositoryMock.Object,
-            notifierMock.Object);
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
@@ -287,15 +296,15 @@ public sealed class ConversationServiceTests
                     cancellationToken),
             Times.Once);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.AddMessage(
+        messageRepositoryMock.Verify(
+            messageRepository =>
+                messageRepository.AddMessage(
                     It.IsAny<Message>()),
             Times.Never);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.SaveChangesAsync(
+        unityOfWorkMock.Verify(
+            unitOfWork =>
+                unitOfWork.SaveChangesAsync(
                     It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -325,11 +334,15 @@ public sealed class ConversationServiceTests
         var cancellationToken = new CancellationTokenSource().Token;
 
         var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         var service = new ConversationService(
             repositoryMock.Object,
-            notifierMock.Object);
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
@@ -350,15 +363,15 @@ public sealed class ConversationServiceTests
                     cancellationToken),
             Times.Never);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.AddMessage(
+        messageRepositoryMock.Verify(
+            messageRepository =>
+                messageRepository.AddMessage(
                     It.IsAny<Message>()),
             Times.Never);
 
-        repositoryMock.Verify(
-            repository =>
-                repository.SaveChangesAsync(
+        unityOfWorkMock.Verify(
+            unitOfWork =>
+                unitOfWork.SaveChangesAsync(
                     It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -385,20 +398,24 @@ public sealed class ConversationServiceTests
         var cancellationToken = new CancellationTokenSource().Token;
 
         var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         var service = new ConversationService(
             repositoryMock.Object,
-            notifierMock.Object);
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            unityOfWorkMock.Object);
 
         // Act & Assert
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             service.GetMessagesAsync(tenantId, conversationId, pageSize, cancellationToken));
 
-        repositoryMock.Verify(
-            repository =>
-                repository.GetMessagesAsync(
+        messageRepositoryMock.Verify(
+            messageRepository =>
+                messageRepository.GetMessagesAsync(
                     tenantId,
                     conversationId,
                     pageSize,

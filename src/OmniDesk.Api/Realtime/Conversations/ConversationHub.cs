@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Conversations;
+using OmniDesk.Domain.Security;
 
 namespace OmniDesk.Api.Realtime.Conversations;
 
@@ -34,12 +35,42 @@ public sealed class ConversationHub : Hub<IConversationClient>
     public async Task SubscribeConversation(
         Guid conversationId)
     {
-        var tenantId = Context.User!.GetRequiredTenantId();
+        var user = Context.User
+            ?? throw new HubException("Unauthenticated connection.");
 
-        await _conversationAccessService.EnsureCanAccessAsync(
-            tenantId,
-            conversationId,
-            Context.ConnectionAborted);
+        var tenantId =
+            user.GetRequiredTenantId();
+
+        var actorType =
+            user.GetRequiredActorType();
+
+        switch (actorType)
+        {
+            case OmniDeskActorTypes.Agent:
+                await _conversationAccessService.EnsureCanAccessAsync(
+                    tenantId,
+                    conversationId,
+                    Context.ConnectionAborted);
+                break;
+
+            case OmniDeskActorTypes.Customer:
+                {
+                    var authorizedConversationId =
+                        user.GetRequiredConversationId();
+
+                    if (authorizedConversationId != conversationId)
+                    {
+                        throw new HubException(
+                            "You cannot access this conversation.");
+                    }
+
+                    break;
+                }
+
+            default:
+                throw new HubException(
+                    "Unsupported actor type.");
+        }
 
         var groupName =
             ConversationGroupName.ForConversation(

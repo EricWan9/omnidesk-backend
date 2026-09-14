@@ -8,13 +8,19 @@ public sealed class ConversationService : IConversationService
 {
     private readonly IConversationRepository _conversationRepository;
     private readonly IConversationNotifier _conversationNotifier;
+    private readonly IMessageRepository _messageRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public ConversationService(
         IConversationRepository conversationRepository,
-        IConversationNotifier conversationNotifier)
+        IConversationNotifier conversationNotifier,
+        IMessageRepository messageRepository,
+        IUnitOfWork unitOfWork)
     {
         _conversationRepository = conversationRepository;
         _conversationNotifier = conversationNotifier;
+        _messageRepository = messageRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ConversationDetailResponse?> GetConversationAsync(Guid tenantId, Guid conversationId, CancellationToken cancellationToken)
@@ -36,7 +42,7 @@ public sealed class ConversationService : IConversationService
                 "Page size must be between 1 and 100.");
         }
 
-        return await _conversationRepository.GetMessagesAsync(
+        return await _messageRepository.GetMessagesAsync(
             tenantId,
             conversationId,
             pageSize,
@@ -78,11 +84,11 @@ public sealed class ConversationService : IConversationService
             CreatedAt = now
         };
 
-        _conversationRepository.AddMessage(message);
+        _messageRepository.AddMessage(message);
 
         conversation.MarkUpdated(now);
 
-        await _conversationRepository.SaveChangesAsync(
+        await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
         var response = new MessageResponse(

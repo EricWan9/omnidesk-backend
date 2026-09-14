@@ -25,10 +25,5 @@ public sealed class MessageConfiguration : IEntityTypeConfiguration<Message>
             x.ConversationId,
             x.CreatedAt
         });
-
-        entity.HasOne<User>()
-            .WithMany()
-            .HasForeignKey(x => x.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

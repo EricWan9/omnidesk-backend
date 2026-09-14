@@ -2,6 +2,7 @@ using OmniDesk.Application.Identity;
 using OmniDesk.Application.Identity.Models;
 using OmniDesk.Domain.Entities;
 using OmniDesk.Domain.Identity;
+using OmniDesk.Domain.Widgets;
 using OmniDesk.Infrastructure.Persistence;
 
 namespace OmniDesk.Infrastructure.Identity;
@@ -30,69 +31,68 @@ public sealed class RegistrationService : IRegistrationService
             .Trim()
             .ToLowerInvariant();
 
-        await using var transaction =
-            await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var now = DateTime.UtcNow;
 
-        try
+        var tenant = new Tenant
         {
-            var tenant = new Tenant
-            {
-                Id = Guid.NewGuid(),
-                Name = request.OrganizationName.Trim(),
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
+            Id = Guid.NewGuid(),
+            Name = request.OrganizationName.Trim(),
+            IsActive = true,
+            CreatedAt = now
+        };
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                TenantId = tenant.Id,
-                Email = normalizedEmail,
-                DisplayName = request.AdminDisplayName.Trim(),
-                Role = "Admin",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            user.PasswordHash =
-                _passwordService.HashPassword(user, request.AdminPassword);
-
-            var refreshTokenValue =
-                _tokenService.GenerateRefreshToken();
-
-            var refreshToken = new RefreshToken
-            {
-                Id = Guid.NewGuid(),
-                UserId = user.Id,
-                TokenHash = refreshTokenValue,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(30)
-            };
-
-            _dbContext.Tenants.Add(tenant);
-            _dbContext.Users.Add(user);
-            _dbContext.RefreshTokens.Add(refreshToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            var accessToken =
-                _tokenService.GenerateAccessToken(user);
-
-            await transaction.CommitAsync(cancellationToken);
-
-            return new RegisterTenantResult
-            {
-                TenantId = tenant.Id,
-                UserId = user.Id,
-                AccessToken = accessToken,
-                RefreshToken = refreshTokenValue
-            };
-        }
-        catch
+        var user = new User
         {
-            await transaction.RollbackAsync(cancellationToken);
-            throw;
-        }
+            Id = Guid.NewGuid(),
+            TenantId = tenant.Id,
+            Email = normalizedEmail,
+            DisplayName = request.AdminDisplayName.Trim(),
+            Role = "Admin",
+            IsActive = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var widgetConfiguration = new WidgetConfiguration
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenant.Id,
+            WidgetKey = $"wdg_{Guid.NewGuid():N}",
+            IsActive = true,
+            CreatedAt = now
+        };
+
+        user.PasswordHash =
+            _passwordService.HashPassword(user, request.AdminPassword);
+
+        var refreshTokenValue =
+            _tokenService.GenerateRefreshToken();
+
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TokenHash = refreshTokenValue,
+            CreatedAt = now,
+            ExpiresAt = now.AddDays(30)
+        };
+
+        var accessToken =
+            _tokenService.GenerateAccessToken(user);
+
+        _dbContext.Tenants.Add(tenant);
+        _dbContext.Users.Add(user);
+        _dbContext.RefreshTokens.Add(refreshToken);
+        _dbContext.WidgetConfigurations.Add(widgetConfiguration);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new RegisterTenantResult
+        {
+            TenantId = tenant.Id,
+            UserId = user.Id,
+            AccessToken = accessToken,
+            RefreshToken = refreshTokenValue
+        };
     }
 }

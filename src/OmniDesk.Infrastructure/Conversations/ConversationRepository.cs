@@ -15,11 +15,6 @@ public sealed class ConversationRepository : IConversationRepository
         _dbContext = dbContext;
     }
 
-    public void AddMessage(Message message)
-    {
-        _dbContext.Messages.Add(message);
-    }
-
     public async Task<ConversationDetailResponse?> GetConversationDetailByIdAsync(
         Guid tenantId, 
         Guid conversationId, 
@@ -86,29 +81,8 @@ public sealed class ConversationRepository : IConversationRepository
         .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<MessageResponse>> GetMessagesAsync(
-        Guid tenantId,
-        Guid conversationId,
-        int pageSize,
-        CancellationToken cancellationToken)
+    public void AddConversation(Conversation conversation)
     {
-        return await _dbContext.Messages
-            .AsNoTracking()
-            .Where(m => m.Conversation.TenantId == tenantId && m.ConversationId == conversationId)
-            .OrderByDescending(m => m.CreatedAt)
-            .Take(pageSize)
-            .Select(m => new MessageResponse(
-                m.Id,
-                m.ConversationId,
-                new MessageSenderResponse(m.SenderType, m.SenderId),
-                m.Content,
-                m.CreatedAt
-            ))
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
-    {
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        _dbContext.Conversations.Add(conversation);
     }
 }
