@@ -73,7 +73,6 @@ public sealed class AttachmentsController
         return File(
             result.Content,
             result.ContentType,
-            result.FileName,
-            enableRangeProcessing: true);
+            result.FileName);
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OmniDesk.Api.OpenApi;
 using OmniDesk.Api.Realtime.Conversations;
 using OmniDesk.Application;
+using OmniDesk.Application.Attachments;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Customers;
 using OmniDesk.Application.Identity;
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IConversationNotifier, SignalRConversationNotifier>()
 builder.Services.AddScoped<IConversationAccessService, ConversationAccessService>();
 builder.Services.AddScoped<IWidgetConversationService, WidgetConversationService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
