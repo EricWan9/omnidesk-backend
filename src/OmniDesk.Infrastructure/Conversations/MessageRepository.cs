@@ -26,7 +26,7 @@ public sealed class MessageRepository : IMessageRepository
         int pageSize,
         CancellationToken cancellationToken)
     {
-        return await _dbContext.Messages
+        var messages = await _dbContext.Messages
             .AsNoTracking()
             .Where(m => m.Conversation.TenantId == tenantId && m.ConversationId == conversationId)
             .OrderByDescending(m => m.CreatedAt)
@@ -39,5 +39,9 @@ public sealed class MessageRepository : IMessageRepository
                 m.CreatedAt
             ))
             .ToListAsync(cancellationToken);
+
+        return messages
+            .OrderBy(x => x.CreatedAt)
+            .ToList();
     }
 }
