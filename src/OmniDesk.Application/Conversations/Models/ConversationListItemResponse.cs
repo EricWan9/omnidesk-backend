@@ -11,5 +11,6 @@ public sealed record ConversationListItemResponse(
     string? LastMessage,
     DateTime? LastMessageAt,
     DateTime UpdatedAt,
+    int UnreadCount,
     byte[] RowVersion
 );

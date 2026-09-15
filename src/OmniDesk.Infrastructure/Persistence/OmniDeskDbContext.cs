@@ -30,6 +30,8 @@ public class OmniDeskDbContext : DbContext
 
     public DbSet<WidgetConfiguration> WidgetConfigurations => Set<WidgetConfiguration>();
 
+    public DbSet<ConversationReadState> ConversationReadStates => Set<ConversationReadState>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

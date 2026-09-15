@@ -19,15 +19,27 @@ public sealed class ConversationHub : Hub<IConversationClient>
 
     public override async Task OnConnectedAsync()
     {
-        var tenantId = Context.User!.GetRequiredTenantId();
+        var user = Context.User
+            ?? throw new HubException(
+                "Unauthenticated connection.");
 
-        var workspaceGroupName =
-            ConversationGroupName.ForWorkspace(tenantId);
+        var actorType =
+            user.GetRequiredActorType();
 
-        await Groups.AddToGroupAsync(
-            Context.ConnectionId,
-            workspaceGroupName,
-            Context.ConnectionAborted);
+        if (actorType == OmniDeskActorTypes.Agent)
+        {
+            var tenantId =
+                user.GetRequiredTenantId();
+
+            var workspaceGroupName =
+                ConversationGroupName.ForWorkspace(
+                    tenantId);
+
+            await Groups.AddToGroupAsync(
+                Context.ConnectionId,
+                workspaceGroupName,
+                Context.ConnectionAborted);
+        }
 
         await base.OnConnectedAsync();
     }

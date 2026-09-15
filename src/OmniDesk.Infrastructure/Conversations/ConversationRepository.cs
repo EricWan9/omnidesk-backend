@@ -52,7 +52,8 @@ public sealed class ConversationRepository : IConversationRepository
     }
 
     public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
-        Guid tenantId, 
+        Guid tenantId,
+        Guid userId,
         CancellationToken cancellationToken)
     {
         return await _dbContext.Conversations
@@ -76,6 +77,25 @@ public sealed class ConversationRepository : IConversationRepository
                 .FirstOrDefault(),
 
             c.UpdatedAt,
+
+            c.Messages.Count(m =>
+                m.ConversationId == c.Id
+                && m.SenderType == MessageSenderType.Customer
+                && (
+                    !_dbContext.ConversationReadStates.Any(r =>
+                        r.UserId == userId
+                        && r.ConversationId == c.Id)
+                    ||
+                    m.CreatedAt >
+                    _dbContext.ConversationReadStates
+                        .Where(r =>
+                            r.UserId == userId
+                            && r.ConversationId == c.Id)
+                        .Select(r => r.LastReadAt)
+                        .FirstOrDefault()
+                )
+            ),
+
             c.RowVersion
         ))
         .ToListAsync(cancellationToken);

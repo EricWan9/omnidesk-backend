@@ -5,6 +5,7 @@ using OmniDesk.Application.Conversations.Models;
 using OmniDesk.Domain.Conversations;
 using OmniDesk.Domain.Customers;
 using OmniDesk.Domain.Entities;
+using OmniDesk.Infrastructure.Conversations;
 
 namespace OmniDesk.Application.Tests.Conversations;
 
@@ -50,6 +51,7 @@ public sealed class ConversationServiceTests
         var repositoryMock = new Mock<IConversationRepository>();
         var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         Message? addedMessage = null;
@@ -92,6 +94,7 @@ public sealed class ConversationServiceTests
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
             unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
@@ -194,12 +197,14 @@ public sealed class ConversationServiceTests
         var repositoryMock = new Mock<IConversationRepository>();
         var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
             unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
@@ -265,11 +270,13 @@ public sealed class ConversationServiceTests
         var notifierMock = new Mock<IConversationNotifier>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
         var messageRepositoryMock = new Mock<IMessageRepository>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
             unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
@@ -337,11 +344,13 @@ public sealed class ConversationServiceTests
         var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
             unityOfWorkMock.Object);
 
         var command = new SendMessageCommand(
@@ -401,11 +410,13 @@ public sealed class ConversationServiceTests
         var messageRepositoryMock = new Mock<IMessageRepository>();
         var notifierMock = new Mock<IConversationNotifier>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
             unityOfWorkMock.Object);
 
         // Act & Assert

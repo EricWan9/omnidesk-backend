@@ -37,6 +37,7 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IWidgetConfigurationRepository, WidgetConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IConversationReadStateRepository, ConversationReadStateRepository>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

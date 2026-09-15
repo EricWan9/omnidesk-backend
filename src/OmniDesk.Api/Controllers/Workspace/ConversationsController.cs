@@ -27,10 +27,12 @@ public class ConversationsController : ControllerBase
             CancellationToken cancellationToken)
     {
         var tenantId = User.GetRequiredTenantId();
+        var userId = User.GetRequiredUserId();
 
         var conversations =
             await _conversationService.GetConversationsAsync(
                 tenantId,
+                userId,
                 cancellationToken);
 
         return Ok(conversations);
@@ -101,5 +103,25 @@ public class ConversationsController : ControllerBase
         return Created(
             $"/api/conversations/{conversationId}/messages/{message.Id}",
             message);
+    }
+
+    [HttpPost("{conversationId:guid}/read")]
+    public async Task<IActionResult> MarkAsRead(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var tenantId =
+            User.GetRequiredTenantId();
+
+        var userId =
+            User.GetRequiredUserId();
+
+        await _conversationService.MarkAsReadAsync(
+            tenantId,
+            userId,
+            conversationId,
+            cancellationToken);
+
+        return NoContent();
     }
 }

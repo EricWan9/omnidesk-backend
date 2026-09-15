@@ -7,6 +7,7 @@ public interface IConversationRepository
 {
     Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
         Guid tenantId,
+        Guid userId,
         CancellationToken cancellationToken);
 
     Task<ConversationDetailResponse?> GetConversationDetailByIdAsync(

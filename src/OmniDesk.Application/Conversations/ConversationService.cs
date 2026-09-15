@@ -9,31 +9,50 @@ public sealed class ConversationService : IConversationService
     private readonly IConversationRepository _conversationRepository;
     private readonly IConversationNotifier _conversationNotifier;
     private readonly IMessageRepository _messageRepository;
+    private readonly IConversationReadStateRepository _conversationReadStateRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ConversationService(
         IConversationRepository conversationRepository,
         IConversationNotifier conversationNotifier,
         IMessageRepository messageRepository,
+        IConversationReadStateRepository conversationReadStateRepository,
         IUnitOfWork unitOfWork)
     {
         _conversationRepository = conversationRepository;
         _conversationNotifier = conversationNotifier;
         _messageRepository = messageRepository;
+        _conversationReadStateRepository = conversationReadStateRepository;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ConversationDetailResponse?> GetConversationAsync(Guid tenantId, Guid conversationId, CancellationToken cancellationToken)
+    public async Task<ConversationDetailResponse?> GetConversationAsync(
+        Guid tenantId,
+        Guid conversationId, 
+        CancellationToken cancellationToken)
     {
-        return await _conversationRepository.GetConversationDetailByIdAsync(tenantId, conversationId, cancellationToken);
+        return await _conversationRepository.GetConversationDetailByIdAsync(
+            tenantId, 
+            conversationId, 
+            cancellationToken);
     }
 
-    public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(Guid tenantId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
+        Guid tenantId, 
+        Guid userId,
+        CancellationToken cancellationToken)
     {
-        return await _conversationRepository.GetConversationsAsync(tenantId, cancellationToken);
+        return await _conversationRepository.GetConversationsAsync(
+            tenantId,
+            userId,
+            cancellationToken);
     }
 
-    public async Task<IReadOnlyList<MessageResponse>> GetMessagesAsync(Guid tenantId, Guid conversationId, int pageSize, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<MessageResponse>> GetMessagesAsync(
+        Guid tenantId, 
+        Guid conversationId, 
+        int pageSize, 
+        CancellationToken cancellationToken)
     {
         if (pageSize is < 1 or > 100)
         {
@@ -50,7 +69,8 @@ public sealed class ConversationService : IConversationService
     }
 
     public async Task<MessageResponse> SendMessageAsync(
-        SendMessageCommand command, CancellationToken cancellationToken)
+        SendMessageCommand command, 
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(command.Content))
         {
@@ -108,5 +128,50 @@ public sealed class ConversationService : IConversationService
             cancellationToken);
 
         return response;
+    }
+
+    public async Task MarkAsReadAsync(
+        Guid tenantId,
+        Guid userId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await _conversationRepository.GetConversationByIdAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+        if(conversation == null)
+        {
+            throw new ConversationNotFoundException(conversationId);
+        }
+
+        var readState =
+            await _conversationReadStateRepository.GetAsync(
+                userId,
+                conversationId,
+                cancellationToken);
+
+        var now = DateTime.UtcNow;
+
+        if (readState is null)
+        {
+            readState =
+                new ConversationReadState
+                {
+                    UserId = userId,
+                    ConversationId = conversationId,
+                    LastReadAt = now
+                };
+
+            _conversationReadStateRepository.Add(
+                readState);
+        }
+        else
+        {
+            readState.LastReadAt = now;
+        }
+
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
     }
 }
