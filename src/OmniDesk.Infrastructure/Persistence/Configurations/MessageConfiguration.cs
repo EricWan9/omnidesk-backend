@@ -14,8 +14,7 @@ public sealed class MessageConfiguration : IEntityTypeConfiguration<Message>
             .IsRequired();
 
         entity.Property(x => x.Content)
-            .HasMaxLength(10000)
-            .IsRequired();
+            .HasMaxLength(10000);
 
         entity.Property(x => x.CreatedAt)
             .IsRequired();

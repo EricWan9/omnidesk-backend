@@ -1,7 +1,9 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Exceptions;
 using OmniDesk.Application.Conversations.Models;
+using OmniDesk.Application.Storage;
 using OmniDesk.Domain.Conversations;
 using OmniDesk.Domain.Customers;
 using OmniDesk.Domain.Entities;
@@ -53,6 +55,9 @@ public sealed class ConversationServiceTests
         var notifierMock = new Mock<IConversationNotifier>();
         var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
 
         Message? addedMessage = null;
         MessageResponse? notifiedResponse = null;
@@ -95,13 +100,16 @@ public sealed class ConversationServiceTests
             notifierMock.Object,
             messageRepositoryMock.Object,
             conversationReadStateRepositoryMock.Object,
-            unityOfWorkMock.Object);
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
             conversationId,
             MessageSender.Agent(agentId),
-            "Hello OmniDesk");
+            "Hello OmniDesk", []);
 
         // Act
         var result = await service.SendMessageAsync(
@@ -199,19 +207,26 @@ public sealed class ConversationServiceTests
         var notifierMock = new Mock<IConversationNotifier>();
         var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
             conversationReadStateRepositoryMock.Object,
-            unityOfWorkMock.Object);
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object
+            );
 
         var command = new SendMessageCommand(
             tenantId,
             conversationId,
             MessageSender.Agent(agentId),
-            "Hello OmniDesk");
+            "Hello OmniDesk", []);
 
         repositoryMock.Setup(repository => repository.GetConversationByIdAsync(
                 tenantId,
@@ -271,19 +286,25 @@ public sealed class ConversationServiceTests
         var unityOfWorkMock = new Mock<IUnitOfWork>();
         var messageRepositoryMock = new Mock<IMessageRepository>();
         var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
             conversationReadStateRepositoryMock.Object,
-            unityOfWorkMock.Object);
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
             conversationId,
             MessageSender.Agent(agentId),
-            "Hello OmniDesk");
+            "Hello OmniDesk", []);
 
         repositoryMock.Setup(repository => repository.GetConversationByIdAsync(
                 tenantId,
@@ -345,19 +366,25 @@ public sealed class ConversationServiceTests
         var notifierMock = new Mock<IConversationNotifier>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
         var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
             conversationReadStateRepositoryMock.Object,
-            unityOfWorkMock.Object);
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
 
         var command = new SendMessageCommand(
             tenantId,
             conversationId,
             MessageSender.Agent(agentId),
-            content);
+            content, []);
 
         // Act & Assert
 
@@ -411,13 +438,19 @@ public sealed class ConversationServiceTests
         var notifierMock = new Mock<IConversationNotifier>();
         var unityOfWorkMock = new Mock<IUnitOfWork>();
         var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
 
         var service = new ConversationService(
             repositoryMock.Object,
             notifierMock.Object,
             messageRepositoryMock.Object,
             conversationReadStateRepositoryMock.Object,
-            unityOfWorkMock.Object);
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
 
         // Act & Assert
 

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using OmniDesk.Api.Controllers.Contracts;
 using OmniDesk.Api.Realtime.Conversations;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Conversations;
+using OmniDesk.Application.Attachments;
 using OmniDesk.Application.Conversations.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -80,29 +82,50 @@ public class ConversationsController : ControllerBase
     }
 
     [HttpPost("{conversationId:guid}/messages")]
-    public async Task<ActionResult<MessageResponse>>
-        SendMessage(
-            Guid conversationId,
-            [FromBody] SendMessageRequest request,
-            CancellationToken cancellationToken)
+    public async Task<ActionResult<MessageResponse>> SendMessage(
+        Guid conversationId,
+        [FromForm] SendMessageForm form,
+        CancellationToken cancellationToken)
     {
-        var tenantId = User.GetRequiredTenantId();
-        var userId = User.GetRequiredUserId();
+        var tenantId =
+            User.GetRequiredTenantId();
 
-        var command = new SendMessageCommand(
-            TenantId: tenantId,
-            ConversationId: conversationId,
-            MessageSender: MessageSender.Agent(userId),
-            Content: request.Content);
+        var userId =
+            User.GetRequiredUserId();
 
-        var message =
-            await _conversationService.SendMessageAsync(
-                command,
-                cancellationToken);
+        var uploads = form.Files
+            .Select(file =>
+                new AttachmentUpload(
+                    file.FileName,
+                    file.ContentType,
+                    file.Length,
+                    file.OpenReadStream()))
+            .ToList();
 
-        return Created(
-            $"/api/conversations/{conversationId}/messages/{message.Id}",
-            message);
+        try
+        {
+            var command =
+                new SendMessageCommand(
+                    tenantId,
+                    conversationId,
+                    MessageSender.Agent(userId),
+                    form.Content,
+                    uploads);
+
+            var response =
+                await _conversationService.SendMessageAsync(
+                    command,
+                    cancellationToken);
+
+            return Ok(response);
+        }
+        finally
+        {
+            foreach (var upload in uploads)
+            {
+                await upload.Content.DisposeAsync();
+            }
+        }
     }
 
     [HttpPost("{conversationId:guid}/read")]

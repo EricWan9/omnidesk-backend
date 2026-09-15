@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OmniDesk.Api.Controllers.Contracts;
 using OmniDesk.Api.Security;
+using OmniDesk.Application.Attachments;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
 using OmniDesk.Application.Widgets;
@@ -76,14 +77,11 @@ public sealed class WidgetConversationsController : ControllerBase
     }
 
     [HttpPost("{conversationId:guid}/messages")]
-    public async Task<ActionResult<MessageResponse>>
-        SendMessage(
-            Guid conversationId,
-            SendWidgetMessageRequest request,
-            CancellationToken cancellationToken)
+    public async Task<ActionResult<MessageResponse>> SendMessage(
+        Guid conversationId,
+        [FromForm] SendMessageForm form,
+        CancellationToken cancellationToken)
     {
-        User.EnsureCustomerActor();
-
         var tenantId =
             User.GetRequiredTenantId();
 
@@ -93,23 +91,44 @@ public sealed class WidgetConversationsController : ControllerBase
         var authorizedConversationId =
             User.GetRequiredConversationId();
 
-        EnsureConversationAccess(
-            conversationId,
-            authorizedConversationId);
+        if (conversationId != authorizedConversationId)
+        {
+            return Forbid();
+        }
 
-        var command =
-            new SendMessageCommand(
-                tenantId,
-                conversationId,
-                MessageSender.Customer(customerId),
-                request.Content);
+        var uploads = form.Files
+            .Select(file =>
+                new AttachmentUpload(
+                    file.FileName,
+                    file.ContentType,
+                    file.Length,
+                    file.OpenReadStream()))
+            .ToList();
 
-        var result =
-            await _conversationService.SendMessageAsync(
-                command,
-                cancellationToken);
+        try
+        {
+            var command =
+                new SendMessageCommand(
+                    tenantId,
+                    conversationId,
+                    MessageSender.Customer(customerId),
+                    form.Content,
+                    uploads);
 
-        return Ok(result);
+            var response =
+                await _conversationService.SendMessageAsync(
+                    command,
+                    cancellationToken);
+
+            return Ok(response);
+        }
+        finally
+        {
+            foreach (var upload in uploads)
+            {
+                await upload.Content.DisposeAsync();
+            }
+        }
     }
 
     private static void EnsureConversationAccess(

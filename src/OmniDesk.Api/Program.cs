@@ -8,6 +8,7 @@ using OmniDesk.Application;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Customers;
 using OmniDesk.Application.Identity;
+using OmniDesk.Application.Storage;
 using OmniDesk.Application.Widgets;
 using OmniDesk.Infrastructure;
 using OmniDesk.Infrastructure.Authentication;
@@ -15,6 +16,7 @@ using OmniDesk.Infrastructure.Conversations;
 using OmniDesk.Infrastructure.Customers;
 using OmniDesk.Infrastructure.Identity;
 using OmniDesk.Infrastructure.Persistence;
+using OmniDesk.Infrastructure.Storage;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,12 +34,15 @@ builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IConversationNotifier, SignalRConversationNotifier>();
 builder.Services.AddScoped<IConversationAccessService, ConversationAccessService>();
 builder.Services.AddScoped<IWidgetConversationService, WidgetConversationService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IWidgetConfigurationRepository, WidgetConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationReadStateRepository, ConversationReadStateRepository>();
+builder.Services.AddScoped<IMessageAttachmentRepository, MessageAttachmentRepository>();
+
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -45,6 +50,9 @@ builder.Services.AddSignalR();
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
+
+builder.Services.Configure<BlobStorageOptions>(
+    builder.Configuration.GetSection(BlobStorageOptions.SectionName));
 
 var jwtSection =
     builder.Configuration.GetSection(JwtOptions.SectionName);

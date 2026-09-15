@@ -28,20 +28,33 @@ public sealed class MessageRepository : IMessageRepository
     {
         var messages = await _dbContext.Messages
             .AsNoTracking()
-            .Where(m => m.Conversation.TenantId == tenantId && m.ConversationId == conversationId)
+            .Where(m => m.ConversationId == conversationId)
             .OrderByDescending(m => m.CreatedAt)
             .Take(pageSize)
             .Select(m => new MessageResponse(
                 m.Id,
                 m.ConversationId,
-                new MessageSenderResponse(m.SenderType, m.SenderId),
+                new MessageSenderResponse(
+                    m.SenderType,
+                    m.SenderId),
                 m.Content,
-                m.CreatedAt
+                m.CreatedAt,
+
+                _dbContext.MessageAttachments
+                    .Where(a => a.MessageId == m.Id)
+                    .OrderBy(a => a.CreatedAt)
+                    .Select(a =>
+                        new MessageAttachmentResponse(
+                            a.Id,
+                            a.OriginalFileName,
+                            a.ContentType,
+                            a.Size))
+                    .ToList()
             ))
             .ToListAsync(cancellationToken);
 
-        return messages
-            .OrderBy(x => x.CreatedAt)
-            .ToList();
+                return messages
+                    .OrderBy(m => m.CreatedAt)
+                    .ToList();
     }
 }

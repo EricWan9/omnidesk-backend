@@ -5,5 +5,5 @@ namespace OmniDesk.Api.Controllers.Contracts;
 public sealed record ConversationUpdatedMessage(
     Guid ConversationId,
     MessageSenderType SenderType,
-    string LastMessage,
+    string? LastMessage,
     DateTime LastMessageAt);

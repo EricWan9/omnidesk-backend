@@ -1,4 +1,5 @@
-﻿using OmniDesk.Domain.Conversations;
+﻿using OmniDesk.Application.Attachments;
+using OmniDesk.Domain.Conversations;
 
 namespace OmniDesk.Application.Conversations.Models;
 
@@ -6,7 +7,8 @@ public sealed record SendMessageCommand(
     Guid TenantId,
     Guid ConversationId,
     MessageSender MessageSender,
-    string Content
+    string? Content,
+    IReadOnlyList<AttachmentUpload> Attachments
 );
 
 public sealed record MessageSender

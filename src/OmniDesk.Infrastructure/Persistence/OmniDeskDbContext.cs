@@ -4,6 +4,7 @@ using OmniDesk.Domain.Conversations;
 using OmniDesk.Domain.Customers;
 using OmniDesk.Domain.Entities;
 using OmniDesk.Domain.Identity;
+using OmniDesk.Domain.Storage;
 using OmniDesk.Domain.Widgets;
 
 namespace OmniDesk.Infrastructure.Persistence;
@@ -31,6 +32,8 @@ public class OmniDeskDbContext : DbContext
     public DbSet<WidgetConfiguration> WidgetConfigurations => Set<WidgetConfiguration>();
 
     public DbSet<ConversationReadState> ConversationReadStates => Set<ConversationReadState>();
+
+    public DbSet<MessageAttachment> MessageAttachments => Set<MessageAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
