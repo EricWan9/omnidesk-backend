@@ -1,30 +1,45 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# Runtime base image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+
 USER $APP_UID
 WORKDIR /app
+
 EXPOSE 8080
-EXPOSE 8081
 
 
-# This stage is used to build the service project
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["OmniDesk/OmniDesk.Identity.csproj", "OmniDesk/"]
-RUN dotnet restore "./OmniDesk/OmniDesk.Identity.csproj"
+
+WORKDIR /workspace
+
+# Copy project files first so Docker can reuse the restore cache
+COPY ["src/OmniDesk.Api/OmniDesk.Api.csproj", "src/OmniDesk.Api/"]
+COPY ["src/OmniDesk.Application/OmniDesk.Application.csproj", "src/OmniDesk.Application/"]
+COPY ["src/OmniDesk.Domain/OmniDesk.Domain.csproj", "src/OmniDesk.Domain/"]
+COPY ["src/OmniDesk.Infrastructure/OmniDesk.Infrastructure.csproj", "src/OmniDesk.Infrastructure/"]
+
+RUN dotnet restore "src/OmniDesk.Api/OmniDesk.Api.csproj"
+
+# Copy the remaining repository content
 COPY . .
-WORKDIR "/src/OmniDesk"
-RUN dotnet build "./OmniDesk.Identity.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./OmniDesk.Identity.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+WORKDIR /workspace/src/OmniDesk.Api
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+RUN dotnet publish \
+    "OmniDesk.Api.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/publish \
+    /p:UseAppHost=false \
+    --no-restore
+
+
+# Final production image
 FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "OmniDesk.Identity.dll"]
+
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
+
+ENTRYPOINT ["dotnet", "OmniDesk.Api.dll"]
