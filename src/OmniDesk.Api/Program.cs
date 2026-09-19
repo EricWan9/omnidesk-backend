@@ -24,6 +24,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddDbContext<OmniDeskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityDatabase")));
 
@@ -126,6 +128,9 @@ builder.Services.AddOpenApi(options =>
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health")
+    .AllowAnonymous();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
@@ -138,10 +143,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// HTTPS is enforced by Azure Container Apps ingress
+// app.UseHttpsRedirection();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.MapHub<ConversationHub>("/hubs/conversations");
 
 app.Run();
