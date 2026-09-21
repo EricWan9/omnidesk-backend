@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using OmniDesk.Application.Identity;
 using OmniDesk.Application.Identity.Models;
@@ -7,6 +8,7 @@ namespace OmniDesk.Api.Controllers.Workspace;
 
 [ApiController]
 [Route("api/auth")]
+[EnableCors("AgentCors")]
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;

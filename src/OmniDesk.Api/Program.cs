@@ -126,6 +126,31 @@ builder.Services.AddOpenApi(options =>
     options.AddOperationTransformer<BearerSecurityRequirementTransformer>();
 });
 
+var agentOrigins =
+    builder.Configuration
+        .GetSection("Cors:AgentOrigins")
+        .Get<string[]>()
+    ?? [];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AgentCors", policy =>
+    {
+        policy
+            .WithOrigins(agentOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+
+    options.AddPolicy("WidgetCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health")

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using OmniDesk.Api.Security;
 using OmniDesk.Application.Attachments;
 using OmniDesk.Application.Conversations.Models;
-using OmniDesk.Domain.Identity;
 using OmniDesk.Domain.Security;
 
 namespace OmniDesk.Api.Controllers.Common;
@@ -11,6 +11,7 @@ namespace OmniDesk.Api.Controllers.Common;
 [ApiController]
 [Authorize]
 [Route("api/attachments")]
+[EnableCors("WidgetCors")]
 public sealed class AttachmentsController
     : ControllerBase
 {

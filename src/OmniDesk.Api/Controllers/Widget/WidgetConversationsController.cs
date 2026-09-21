@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using OmniDesk.Api.Controllers.Contracts;
 using OmniDesk.Api.Security;
@@ -13,6 +14,7 @@ namespace OmniDesk.Api.Controllers.Widget;
 [ApiController]
 [Authorize]
 [Route("api/widget/conversations")]
+[EnableCors("WidgetCors")]
 public sealed class WidgetConversationsController : ControllerBase
 {
     private readonly IWidgetConversationService _widgetConversationService;
