@@ -111,7 +111,7 @@ jobs:
           dotnet ef migrations bundle \
             --project ./src/OmniDesk.Infrastructure \
             --startup-project ./src/OmniDesk.Api \
-            --context IdentityDbContext \
+            --context OmniDeskDbContext \
             --configuration Release \
             --self-contained \
             --target-runtime linux-x64 \
