@@ -171,6 +171,8 @@ if (app.Environment.IsDevelopment())
 // HTTPS is enforced by Azure Container Apps ingress
 // app.UseHttpsRedirection();
 
+app.UseCors();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
