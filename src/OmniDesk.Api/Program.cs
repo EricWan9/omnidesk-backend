@@ -129,6 +129,12 @@ var agentOrigins =
         .Get<string[]>()
     ?? [];
 
+var realtimeOrigins =
+    builder.Configuration
+        .GetSection("Cors:RealtimeOrigins")
+        .Get<string[]>()
+    ?? [];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AgentCors", policy =>
@@ -146,16 +152,25 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
+
+    options.AddPolicy("RealtimeCors", policy =>
+    {
+        policy
+            .WithOrigins(realtimeOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
+
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health")
-    .AllowAnonymous();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi().AllowAnonymous();
+    app.MapOpenApi()
+        .AllowAnonymous();
 
     app.UseSwaggerUI(options =>
     {
@@ -173,8 +188,15 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+
+app.MapHealthChecks("/health")
+    .AllowAnonymous();
+
 app.MapControllers();
 
-app.MapHub<ConversationHub>("/hubs/conversations");
+app.MapHub<ConversationHub>(
+    "/hubs/conversations")
+    .RequireCors("RealtimeCors");
+
 
 app.Run();
