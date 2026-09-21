@@ -27,7 +27,7 @@ builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddDbContext<OmniDeskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityDatabase")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -51,9 +51,6 @@ builder.Services.AddScoped<IMessageAttachmentRepository, MessageAttachmentReposi
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddSignalR();
-
-builder.Services.Configure<JwtOptions>(
-    builder.Configuration.GetSection(JwtOptions.SectionName));
 
 builder.Services.Configure<BlobStorageOptions>(
     builder.Configuration.GetSection(BlobStorageOptions.SectionName));
@@ -182,6 +179,8 @@ if (app.Environment.IsDevelopment())
             "OmniDesk Identity API v1");
     });
 }
+
+app.UseRouting();
 
 app.UseCors();
 
