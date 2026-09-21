@@ -61,14 +61,24 @@ jobs:
           az acr login \
             --name "${{ vars.ACR_NAME }}"
 
+      - name: Generate image tag
+        id: image-tag
+        run: |
+          TIMESTAMP=$(date -u +'%Y%m%d-%H%M%S')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          IMAGE_TAG="${TIMESTAMP}-${SHORT_SHA}"
+
+          echo "tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Docker image tag: ${IMAGE_TAG}"
+
       - name: Build Docker image
         run: |
           docker build \
             -f ./src/OmniDesk.Api/Dockerfile \
-            -t "${{ vars.ACR_LOGIN_SERVER }}/omnidesk-api:${{ github.sha }}" \
+            -t "${{ vars.ACR_LOGIN_SERVER }}/omnidesk-api:${{ steps.image-tag.outputs.tag }}" \
             .
 
       - name: Push Docker image
         run: |
           docker push \
-            "${{ vars.ACR_LOGIN_SERVER }}/omnidesk-api:${{ github.sha }}"
+            "${{ vars.ACR_LOGIN_SERVER }}/omnidesk-api:${{ steps.image-tag.outputs.tag }}"

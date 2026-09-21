@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using OmniDesk.Api.Controllers.Contracts;
 using OmniDesk.Api.Realtime.Conversations;
 using OmniDesk.Api.Security;
-using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Attachments;
+using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,6 +13,7 @@ namespace OmniDesk.Api.Controllers.Workspace;
 
 [ApiController]
 [Route("api/workspace/conversations")]
+[EnableCors("AgentCors")]
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationService _conversationService;
