@@ -4,7 +4,9 @@ public sealed class BlobStorageOptions
 {
     public const string SectionName = "BlobStorage";
 
-    public string ConnectionString { get; init; } = null!;
+    public string? ConnectionString { get; set; }
 
-    public string ContainerName { get; init; } = null!;
+    public string? ServiceUri { get; set; }
+
+    public string ContainerName { get; set; } = string.Empty;
 }
