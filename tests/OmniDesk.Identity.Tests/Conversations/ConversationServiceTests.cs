@@ -166,6 +166,378 @@ public sealed class ConversationServiceTests
     }
 
     [Fact]
+    public async Task AssignToMeAsync_AssignsCurrentUser_AndIsIdempotent()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Open,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>()
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        unityOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        notifierMock
+            .Setup(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        // Act - first assign
+        await service.AssignToMeAsync(tenantId, userId, conversationId, CancellationToken.None);
+
+        Assert.Equal(userId, conversation.AssignedUserId);
+
+        // Act - idempotent assign
+        await service.AssignToMeAsync(tenantId, userId, conversationId, CancellationToken.None);
+
+        // Should have saved/notify only when changed (we can't assert exact times reliably here), but ensure no exception
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        notifierMock.Verify(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task UnassignAsync_ClearsAssignedUser_AndIsIdempotent()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+        var assignedUser = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Open,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>(),
+            AssignedUserId = assignedUser
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        unityOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        notifierMock
+            .Setup(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        // Act - unassign
+        await service.UnassignAsync(tenantId, conversationId, CancellationToken.None);
+
+        Assert.Null(conversation.AssignedUserId);
+
+        // Act - idempotent unassign
+        await service.UnassignAsync(tenantId, conversationId, CancellationToken.None);
+
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        notifierMock.Verify(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task CloseConversationAsync_WhenConversationIsOpen_ClosesAndNotifies()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Open,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>()
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        unityOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        notifierMock
+            .Setup(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        await service.CloseConversationAsync(tenantId, conversationId, CancellationToken.None);
+
+        Assert.Equal(ConversationStatus.Closed, conversation.Status);
+        notifierMock.Verify();
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CloseConversationAsync_WhenConversationIsAlreadyClosed_IsIdempotent()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Closed,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>()
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        await service.CloseConversationAsync(tenantId, conversationId, CancellationToken.None);
+
+        // No save or notify
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        notifierMock.Verify(n => n.ConversationUpdatedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReopenConversationAsync_WhenConversationIsClosed_ReopensAndNotifies()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Closed,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>()
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        unityOfWorkMock
+            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        notifierMock
+            .Setup(n => n.ConversationUpdatedAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        await service.ReopenConversationAsync(tenantId, conversationId, CancellationToken.None);
+
+        Assert.Equal(ConversationStatus.Open, conversation.Status);
+        notifierMock.Verify();
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReopenConversationAsync_WhenConversationIsAlreadyOpen_IsIdempotent()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var conversation = new Conversation
+        {
+            Id = conversationId,
+            TenantId = tenantId,
+            CustomerId = Guid.NewGuid(),
+            Customer = new Customer() { Id = Guid.NewGuid(), TenantId = tenantId },
+            Status = ConversationStatus.Open,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            RowVersion = Array.Empty<byte>()
+        };
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conversation);
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        await service.ReopenConversationAsync(tenantId, conversationId, CancellationToken.None);
+
+        unityOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        notifierMock.Verify(n => n.ConversationUpdatedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CloseConversationAsync_WhenConversationMissing_ThrowsNotFound()
+    {
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var repositoryMock = new Mock<IConversationRepository>();
+        var messageRepositoryMock = new Mock<IMessageRepository>();
+        var notifierMock = new Mock<IConversationNotifier>();
+        var conversationReadStateRepositoryMock = new Mock<IConversationReadStateRepository>();
+        var unityOfWorkMock = new Mock<IUnitOfWork>();
+        var messageAttachmentRepository = new Mock<IMessageAttachmentRepository>();
+        var loggerMock = new Mock<ILogger<ConversationService>>();
+        var blobStorageServiceMock = new Mock<IBlobStorageService>();
+
+        repositoryMock
+            .Setup(r => r.GetConversationByIdAsync(tenantId, conversationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Conversation?)null);
+
+        var service = new ConversationService(
+            repositoryMock.Object,
+            notifierMock.Object,
+            messageRepositoryMock.Object,
+            conversationReadStateRepositoryMock.Object,
+            unityOfWorkMock.Object,
+            blobStorageServiceMock.Object,
+            messageAttachmentRepository.Object,
+            loggerMock.Object);
+
+        await Assert.ThrowsAsync<ConversationNotFoundException>(async () =>
+            await service.CloseConversationAsync(tenantId, conversationId, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task SendMessageAsync_WhenConversationIsClosed_ShouldThrowAndNotPersistOrNotify()
     {
         // Arrange

@@ -23,14 +23,14 @@ public sealed class ConversationService : IConversationService
 
     private const long MaxAttachmentSize = 10 * 1024 * 1024;
     private const int MaxAttachmentCount = 5;
-    private static readonly HashSet<string> AllowedContentTypes =
-    [
+    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
         "image/jpeg",
         "image/png",
         "image/webp",
         "application/pdf",
         "text/plain"
-    ];
+    };
 
     public ConversationService(
         IConversationRepository conversationRepository,
@@ -52,25 +52,102 @@ public sealed class ConversationService : IConversationService
         _logger = logger;
     }
 
-    public async Task<ConversationDetailResponse?> GetConversationAsync(
+    public async Task<ConversationListItemResponse?> GetConversationAsync(
         Guid tenantId,
+        Guid userId,
         Guid conversationId, 
         CancellationToken cancellationToken)
     {
         return await _conversationRepository.GetConversationDetailByIdAsync(
-            tenantId, 
+            tenantId,
+            userId,
             conversationId, 
             cancellationToken);
     }
 
-    public async Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
+    public async Task<GetConversationsResult> GetConversationsAsync(
         Guid tenantId, 
         Guid userId,
+        int page,
+        int pageSize,
+        ConversationStatusFilter statusFilter,
+        ConversationAssignmentFilter assignmentFilter,
+        string? search,
         CancellationToken cancellationToken)
     {
         return await _conversationRepository.GetConversationsAsync(
             tenantId,
             userId,
+            page,
+            pageSize,
+            statusFilter,
+            assignmentFilter,
+            search,
+            cancellationToken);
+    }
+
+    public async Task AssignToMeAsync(
+        Guid tenantId,
+        Guid userId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await _conversationRepository.GetConversationByIdAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        if (conversation is null)
+        {
+            throw new ConversationNotFoundException(conversationId);
+        }
+
+        if (conversation.AssignedUserId == userId)
+        {
+            return;
+        }
+
+        conversation.AssignedUserId = userId;
+
+        // Do not update UpdatedAt because assignment should not move conversation activity
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _conversationNotifier.ConversationUpdatedAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+    }
+
+    public async Task UnassignAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await _conversationRepository.GetConversationByIdAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        if (conversation is null)
+        {
+            throw new ConversationNotFoundException(conversationId);
+        }
+
+        if (conversation.AssignedUserId == null)
+        {
+            return;
+        }
+
+        conversation.AssignedUserId = null;
+
+        // Do not update UpdatedAt because assignment should not move conversation activity
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _conversationNotifier.ConversationUpdatedAsync(
+            tenantId,
+            conversationId,
             cancellationToken);
     }
 
@@ -86,7 +163,6 @@ public sealed class ConversationService : IConversationService
                 nameof(pageSize),
                 "Page size must be between 1 and 100.");
         }
-
         return await _messageRepository.GetMessagesAsync(
             tenantId,
             conversationId,
@@ -94,6 +170,67 @@ public sealed class ConversationService : IConversationService
             cancellationToken);
     }
 
+    public async Task CloseConversationAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await _conversationRepository.GetConversationByIdAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        if (conversation is null)
+        {
+            throw new ConversationNotFoundException(conversationId);
+        }
+
+        if (conversation.Status == ConversationStatus.Closed)
+        {
+            return;
+        }
+
+        conversation.Status = ConversationStatus.Closed;
+        conversation.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _conversationNotifier.ConversationUpdatedAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+    }
+
+    public async Task ReopenConversationAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await _conversationRepository.GetConversationByIdAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        if (conversation is null)
+        {
+            throw new ConversationNotFoundException(conversationId);
+        }
+
+        if (conversation.Status == ConversationStatus.Open)
+        {
+            return;
+        }
+
+        conversation.Status = ConversationStatus.Open;
+        conversation.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _conversationNotifier.ConversationUpdatedAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+    }
     public async Task<MessageResponse> SendMessageAsync(
     SendMessageCommand command,
     CancellationToken cancellationToken)

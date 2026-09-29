@@ -26,9 +26,14 @@ public class ConversationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ConversationListItemResponse>>>
+    public async Task<ActionResult<GetConversationsResult>>
         GetConversations(
-            CancellationToken cancellationToken)
+            [FromQuery] ConversationStatusFilter status = ConversationStatusFilter.All,
+            [FromQuery] ConversationAssignmentFilter assignment = ConversationAssignmentFilter.All,
+            [FromQuery] string? search = null,
+            int page = 1,
+            int pageSize = 50,
+            CancellationToken cancellationToken = default)
     {
         var tenantId = User.GetRequiredTenantId();
         var userId = User.GetRequiredUserId();
@@ -37,9 +42,44 @@ public class ConversationsController : ControllerBase
             await _conversationService.GetConversationsAsync(
                 tenantId,
                 userId,
+                page,
+                pageSize,
+                status,
+                assignment,
+                search,
                 cancellationToken);
 
         return Ok(conversations);
+    }
+
+    [HttpPost("{conversationId:guid}/close")]
+    public async Task<IActionResult> CloseConversation(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = User.GetRequiredTenantId();
+
+        await _conversationService.CloseConversationAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("{conversationId:guid}/reopen")]
+    public async Task<IActionResult> ReopenConversation(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = User.GetRequiredTenantId();
+
+        await _conversationService.ReopenConversationAsync(
+            tenantId,
+            conversationId,
+            cancellationToken);
+
+        return NoContent();
     }
 
     [HttpGet("{conversationId:guid}")]
@@ -49,10 +89,12 @@ public class ConversationsController : ControllerBase
             CancellationToken cancellationToken)
     {
         var tenantId = User.GetRequiredTenantId();
+        var userId = User.GetRequiredUserId();
 
         var conversation =
             await _conversationService.GetConversationAsync(
                 tenantId,
+                userId,
                 conversationId,
                 cancellationToken);
 
@@ -144,6 +186,38 @@ public class ConversationsController : ControllerBase
         await _conversationService.MarkAsReadAsync(
             tenantId,
             userId,
+            conversationId,
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("{conversationId:guid}/assign-to-me")]
+    public async Task<IActionResult> AssignToMe(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = User.GetRequiredTenantId();
+        var userId = User.GetRequiredUserId();
+
+        await _conversationService.AssignToMeAsync(
+            tenantId,
+            userId,
+            conversationId,
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("{conversationId:guid}/unassign")]
+    public async Task<IActionResult> Unassign(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = User.GetRequiredTenantId();
+
+        await _conversationService.UnassignAsync(
+            tenantId,
             conversationId,
             cancellationToken);
 

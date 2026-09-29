@@ -8,6 +8,7 @@ public sealed record ConversationListItemResponse(
     string? CustomerEmail,
     ConversationStatus Status,
     Guid? AssignedUserId,
+    string? AssignedUserDisplayName,
     string? LastMessage,
     DateTime? LastMessageAt,
     DateTime UpdatedAt,

@@ -9,4 +9,9 @@ public interface IConversationNotifier
         Guid conversationId,
         MessageResponse message,
         CancellationToken cancellationToken);
+
+    Task ConversationUpdatedAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken);
 }

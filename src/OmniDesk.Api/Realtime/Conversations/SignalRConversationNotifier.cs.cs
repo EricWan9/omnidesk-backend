@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using OmniDesk.Api.Controllers.Contracts;
+using OmniDesk.Domain.Conversations;
 using OmniDesk.Application.Conversations;
 using OmniDesk.Application.Conversations.Models;
 
@@ -31,6 +32,7 @@ public sealed class SignalRConversationNotifier : IConversationNotifier
                         conversationId))
             .MessageSent(message);
 
+        // Notify workspace that conversation was updated (includes last message info)
         await _hubContext.Clients
             .Group(
                 ConversationGroupName
@@ -41,5 +43,24 @@ public sealed class SignalRConversationNotifier : IConversationNotifier
                     message.MessageSender.Type,
                     message.Content,
                     message.CreatedAt));
+    }
+
+    public async Task ConversationUpdatedAsync(
+        Guid tenantId,
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await _hubContext.Clients
+            .Group(
+                ConversationGroupName
+                    .ForWorkspace(tenantId))
+            .ConversationUpdated(
+                new ConversationUpdatedMessage(
+                    conversationId,
+                    MessageSenderType.System,
+                    null,
+                    DateTime.UtcNow));
     }
 }

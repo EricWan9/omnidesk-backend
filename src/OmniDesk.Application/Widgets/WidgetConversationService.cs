@@ -68,7 +68,7 @@ public sealed class WidgetConversationService : IWidgetConversationService
             Id = conversationId,
             TenantId = tenantId,
             CustomerId = customerId,
-            Status = ConversationStatus.Pending,
+            Status = ConversationStatus.Open,
             CreatedAt = now,
             UpdatedAt = now
         };

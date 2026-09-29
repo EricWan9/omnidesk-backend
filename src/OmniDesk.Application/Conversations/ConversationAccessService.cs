@@ -19,7 +19,7 @@ public sealed class ConversationAccessService
         CancellationToken cancellationToken)
     {
         var conversation =
-            await _conversationRepository.GetConversationDetailByIdAsync(
+            await _conversationRepository.GetConversationByIdAsync(
                 tenantId,
                 conversationId,
                 cancellationToken);
