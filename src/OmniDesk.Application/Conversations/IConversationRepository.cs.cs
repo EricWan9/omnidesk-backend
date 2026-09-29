@@ -5,13 +5,19 @@ namespace OmniDesk.Application.Conversations;
 
 public interface IConversationRepository
 {
-    Task<IReadOnlyList<ConversationListItemResponse>> GetConversationsAsync(
+    Task<GetConversationsResult> GetConversationsAsync(
         Guid tenantId,
         Guid userId,
+        int page,
+        int pageSize,
+        ConversationStatusFilter statusFilter,
+        ConversationAssignmentFilter assignmentFilter,
+        string? search,
         CancellationToken cancellationToken);
 
-    Task<ConversationDetailResponse?> GetConversationDetailByIdAsync(
+    Task<ConversationListItemResponse?> GetConversationDetailByIdAsync(
         Guid tenantId,
+        Guid userId,
         Guid conversationId,
         CancellationToken cancellationToken);
 
